@@ -160,7 +160,7 @@ section.br-header{
 }
 section.br-header img{
   width: 50%;
-  max-width: 600px;
+  max-width: 500px;
 }
 article.br-swiper-container{
   margin-left: auto;
@@ -669,7 +669,7 @@ article.br-history-se-ctnt-mobile {
   }
   section.br-header img{
     width: 90%;
-    max-width: 450px;
+    max-width: 350px;
   }
   section.br-swiper h1.br-swiper-title{
     font-size: 3em;
