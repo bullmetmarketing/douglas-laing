@@ -46,7 +46,7 @@ const main = () => {
         swiperPosition = Math.ceil((model.productList.length - model.productsToShow) / 2);
       } else {
         centralPosition = Math.floor(model.productList.length / 2);
-        swiperPosition = Math.floor((model.productList.length - model.productsToShow) / 2);
+        swiperPosition = 0
       }
       selectors.brSwiperFocus = model.productList[centralPosition];
       selectors.brSwiperPrev = model.productList[centralPosition - 1];
