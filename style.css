@@ -245,7 +245,14 @@ div.right-button{
       -ms-transform: translate(-60px, -50%);
           transform: translate(-60px, -50%);
 }
+article.br-swiper-wrapper.unselected{
+  display:none;
+}
+article.br-swiper-wrapper.selected{
+  display:flex;
+}
 article.br-swiper-wrapper{
+  display:none;
   position: relative;
   width: 100%;
   height: auto;
@@ -279,6 +286,22 @@ article.br-swiper-wrapper-ie{
   transition: left 200ms ease-in-out;
   display: block;
   margin: 50px 0px;
+}
+article.br-swiper-toggle button{
+  margin: 20px;
+  padding: 20px;
+  background-color: blue;
+  color: white;
+  border-radius: 20px;
+
+}
+article.br-swipe-product-info p.br-swipper-product-counter{
+  margin: 0;
+  padding: 0;
+  font-size: 0.8em;
+}
+article.br-swipe-product-info p.br-swipper-product-counter span{
+  font-weight: bold;
 }
 article.br-swipe-product-info{
   -webkit-box-orient: vertical;

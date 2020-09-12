@@ -7,10 +7,13 @@ const main = () => {
     this.brSwiperContainer = this.brSwiper.querySelector('.br-swiper-container');    
     this.brSwiperLeftButton = this.brSwiperContainer.querySelector('.left-button');    
     this.brSwiperRightButton = this.brSwiperContainer.querySelector('.right-button');    
-    this.brSwiperWrapper = this.brSwiperContainer.querySelector('.br-swiper-wrapper');
+    this.brSwiperWrapper = this.brSwiperContainer.querySelectorAll('.br-swiper-wrapper');
+    this.brSwiperButton = this.brSwiperContainer.querySelectorAll('.br-swiper-toggle button');
     this.brSwiperProductInfo = this.brSwiperContainer.querySelector('.br-swipe-product-info-title');
     this.brSwiperProductPrize = this.brSwiperContainer.querySelector('.br-swipe-product-info-prize');
     this.brSwiperProductCTA = this.brSwiperContainer.querySelector('.br-swipe-product-info a');
+    this.brSwiperProductCounter = this.brSwiperContainer.querySelector('.br-swipper-product-counter');
+    this.selectedSwiper;
     this.brSwiperFocus; 
     this.brSwiperNext; 
     this.brSwiperPrev;     
@@ -23,11 +26,12 @@ const main = () => {
     this.productsToShow = 5;
     this.productList = [];
     this.lockPosition = 0;
+    this.swiperActive = "test1"
   };
 
   const view = new function() {
     this.setProductElements = () => {
-      model.productList = [...document.querySelectorAll('.default')];
+      model.productList = [...selectors.selectedSwiper.querySelectorAll('.default')];
     }
     this.setProductWidth = () => {
       model.containerWidth = selectors.brSwiperContainer.offsetWidth
@@ -43,7 +47,8 @@ const main = () => {
       let swiperPosition;
       if(model.productList.length%2 === 0) {
         centralPosition = Math.ceil(model.productList.length / 2);
-        swiperPosition = Math.ceil((model.productList.length - model.productsToShow) / 2);
+        // swiperPosition = Math.ceil((model.productList.length - model.productsToShow) / 2);
+        swiperPosition = 0.5
       } else {
         centralPosition = Math.floor(model.productList.length / 2);
         swiperPosition = 0
@@ -56,15 +61,17 @@ const main = () => {
       selectors.brSwiperFocus.classList.add('focus');
       selectors.brSwiperPrev.classList.add('prev');      
       selectors.brSwiperNext.classList.add('next');
-      selectors.brSwiperWrapper.style.left = `-${model.productWidth * swiperPosition}px`;
+      selectors.selectedSwiper.style.left = `-${model.productWidth * swiperPosition}px`;
       this.createProductCTA(selectors.brSwiperFocus);
     };
     this.createProductCTA = (selector) => {
       const productInfo = selector.getAttribute('data-product');
       const productPrize = selector.getAttribute('data-prize');
+      const productOrder = Number(selector.getAttribute('data-list')) + 1;
       const productLink = selector.querySelector('a').getAttribute('href');
       selectors.brSwiperProductInfo.innerHTML = productInfo;
       selectors.brSwiperProductPrize.innerHTML = productPrize;
+      selectors.brSwiperProductCounter.innerHTML = `Producto <span>${productOrder}</span> de <span>${model.productList.length}</span>`
       selectors.brSwiperProductCTA.setAttribute('href', productLink );
     };
     this.cleanClassAndEvents = () => {
@@ -75,9 +82,9 @@ const main = () => {
       selectors.brSwiperFocus.classList.remove('focus');
     };
     this.swipeOne = (direction) => {
-      const previousLeft = parseFloat(selectors.brSwiperWrapper.style.left);
-      direction === 'left' && (selectors.brSwiperWrapper.style.left = `${ previousLeft - model.productWidth}px`);
-      direction === 'right' && (selectors.brSwiperWrapper.style.left = `${ previousLeft + model.productWidth}px`);
+      const previousLeft = parseFloat(selectors.selectedSwiper.style.left);
+      direction === 'left' && (selectors.selectedSwiper.style.left = `${ previousLeft - model.productWidth}px`);
+      direction === 'right' && (selectors.selectedSwiper.style.left = `${ previousLeft + model.productWidth}px`);
     };
     this.resetClasses = () => {
       model.productList.forEach((product) => {
@@ -88,6 +95,20 @@ const main = () => {
         product.classList.remove('next');
       });
     };
+    this.resetedSwipersWrapper = () => {
+      view.resetClasses();
+      const wrappers = [...selectors.brSwiperWrapper].map((wrapper) => {
+        wrapper.classList.remove("selected")
+        wrapper.classList.add("unselected")
+        return wrapper
+      })
+      return wrappers
+    };
+      this.setStarterSwipper = () => {
+      selectors.selectedSwiper = this.resetedSwipersWrapper().filter( swiper => swiper.id === model.swiperActive)[0];
+      selectors.selectedSwiper.classList.remove("unselected");
+      selectors.selectedSwiper.classList.add("selected");
+    }
   };
 
   const events = new function() {
@@ -102,10 +123,10 @@ const main = () => {
         view.setStartingPosition()
       };
       const previousWidth = model.productWidth;
-      const previousLeft = parseFloat(selectors.brSwiperWrapper.style.left);
+      const previousLeft = parseFloat(selectors.selectedSwiper.style.left);
       view.setProductWidth();
       const reducctionFactor = previousWidth / model.productWidth;
-      selectors.brSwiperWrapper.style.left = `${ previousLeft / reducctionFactor}px`;
+      selectors.selectedSwiper.style.left = `${ previousLeft / reducctionFactor}px`;
     };
     this.onPrevious = () => {
       if(selectors.brSwiperFocus.previousElementSibling){
@@ -156,18 +177,25 @@ const main = () => {
       }
     };
     this.unify = (e) => { return e.changedTouches ? e.changedTouches[0] : e };
+    this.selectSwiper = (e) => {
+      model.swiperActive = e.target.dataset.swiper
+      view.setStarterSwipper();
+      view.setStartingPosition();
+    }
   };
 
   if ((window.innerWidth < 750)) {
     view.resetClasses();
     model.productsToShow = 3;
   };
+  view.setStarterSwipper();
   view.setStartingPosition();
   window.addEventListener('resize', events.resizeProductAndPosition, true);
-  selectors.brSwiperWrapper.addEventListener('mousedown', events.lock, true);
-  selectors.brSwiperWrapper.addEventListener('touchstart', events.lock, true);
-  selectors.brSwiperWrapper.addEventListener('mouseup', events.move, true);
-  selectors.brSwiperWrapper.addEventListener('touchend', events.move, true);
+  selectors.brSwiperWrapper.forEach(swiper => swiper.addEventListener('mousedown', events.lock, true));
+  selectors.brSwiperWrapper.forEach(swiper => swiper.addEventListener('touchstart', events.lock, true));
+  selectors.brSwiperWrapper.forEach(swiper => swiper.addEventListener('mouseup', events.move, true));
+  selectors.brSwiperWrapper.forEach(swiper => swiper.addEventListener('touchend', events.move, true));
+  selectors.brSwiperButton.forEach(button => button.addEventListener('click', events.selectSwiper, true));
   selectors.brSwiperLeftButton.addEventListener('click', events.onPrevious, true);
   selectors.brSwiperRightButton.addEventListener('click', events.onNext, true);
 
