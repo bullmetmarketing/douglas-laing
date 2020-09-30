@@ -8,7 +8,7 @@ const main = () => {
     this.brSwiperLeftButton = this.brSwiperContainer.querySelector('.left-button');    
     this.brSwiperRightButton = this.brSwiperContainer.querySelector('.right-button');    
     this.brSwiperWrapper = this.brSwiperContainer.querySelectorAll('.br-swiper-wrapper');
-    this.brSwiperButton = this.brSwiperContainer.querySelectorAll('.br-swiper-toggle button');
+    this.brSwiperButton = this.brSwiper.querySelectorAll('.br-swiper-toggle button');
     this.brSwiperProductInfo = this.brSwiperContainer.querySelector('.br-swipe-product-info-title');
     this.brSwiperProductPrize = this.brSwiperContainer.querySelector('.br-swipe-product-info-prize');
     this.brSwiperProductCTA = this.brSwiperContainer.querySelector('.br-swipe-product-info a');
@@ -26,12 +26,12 @@ const main = () => {
     this.productsToShow = 5;
     this.productList = [];
     this.lockPosition = 0;
-    this.swiperActive = "test1"
+    this.swiperActive = "Highland"
   };
 
   const view = new function() {
     this.setProductElements = () => {
-      model.productList = [...selectors.selectedSwiper.querySelectorAll('.default')];
+      model.productList = Array.prototype.slice.call(selectors.selectedSwiper.querySelectorAll('.default'));
     }
     this.setProductWidth = () => {
       model.containerWidth = selectors.brSwiperContainer.offsetWidth
@@ -47,12 +47,22 @@ const main = () => {
       let swiperPosition;
       if(model.productList.length%2 === 0) {
         centralPosition = Math.ceil(model.productList.length / 2);
-        // swiperPosition = Math.ceil((model.productList.length - model.productsToShow) / 2);
         swiperPosition = 0.5
       } else {
         centralPosition = Math.floor(model.productList.length / 2);
         swiperPosition = 0
       }
+      if(model.productList.length === 1) {
+        selectors.brSwiperFocus = model.productList[centralPosition];
+        selectors.brSwiperFocus.classList.add('focus');
+        selectors.selectedSwiper.style.left = `-${model.productWidth * swiperPosition}px`;
+        this.createProductCTA(selectors.brSwiperFocus);
+        selectors.brSwiperLeftButton.classList.add("hidden")
+        selectors.brSwiperRightButton.classList.add("hidden")
+        return
+      }
+      selectors.brSwiperLeftButton.classList.remove("hidden")
+      selectors.brSwiperRightButton.classList.remove("hidden")
       selectors.brSwiperFocus = model.productList[centralPosition];
       selectors.brSwiperPrev = model.productList[centralPosition - 1];
       selectors.brSwiperPrev.addEventListener('click', events.onPrevious, false);
@@ -97,17 +107,22 @@ const main = () => {
     };
     this.resetedSwipersWrapper = () => {
       view.resetClasses();
-      const wrappers = [...selectors.brSwiperWrapper].map((wrapper) => {
+      const wrappers = Array.prototype.slice.call(selectors.brSwiperWrapper);
+      wrappers.forEach((wrapper) => {
         wrapper.classList.remove("selected")
         wrapper.classList.add("unselected")
         return wrapper
       })
       return wrappers
     };
-      this.setStarterSwipper = () => {
+      this.setStarterSwipper = () => { 
       selectors.selectedSwiper = this.resetedSwipersWrapper().filter( swiper => swiper.id === model.swiperActive)[0];
       selectors.selectedSwiper.classList.remove("unselected");
       selectors.selectedSwiper.classList.add("selected");
+    };
+    this.toggleSwipperButton = (button) => {
+      selectors.brSwiperButton.forEach(button => button.classList.remove("button-active"))
+      button.classList.add("button-active");
     }
   };
 
@@ -179,6 +194,7 @@ const main = () => {
     this.unify = (e) => { return e.changedTouches ? e.changedTouches[0] : e };
     this.selectSwiper = (e) => {
       model.swiperActive = e.target.dataset.swiper
+      view.toggleSwipperButton(e.target);
       view.setStarterSwipper();
       view.setStartingPosition();
     }
@@ -206,6 +222,8 @@ const mainIe = () => {
     this.page = document.querySelector('body');
     this.brSwiperContainer = this.page.querySelectorAll('.br-swiper-container');
     this.brSwiperWrapper = this.page.querySelectorAll('.br-swiper-wrapper');
+    this.brHeader = this.page.querySelector('.br-header');
+    this.brSwiperToggle = this.page.querySelector('.br-swiper-toggle');
     this.brSwiperDefault = this.page.querySelectorAll('.default');
     this.brHistoryImgContainer = this.page.querySelectorAll('.br-history-se-ctnt-block-img-container')
     this.brHistoryImg = this.page.querySelectorAll('.br-history-se-ctnt-block-img')
@@ -227,6 +245,8 @@ const mainIe = () => {
       this.toggleIeClasses(selectors.brHistoryImg, 'br-history-se-ctnt-block-img');
       this.toggleIeClasses(selectors.brHistoryTextContainer, 'br-history-se-ctnt-block-text');    
       this.toggleIeClasses(selectors.brHistoryBlock, 'br-history-se-ctnt-block');
+      this.toggleIeClasses(selectors.brHeader, 'br-header');
+      this.toggleIeClasses(selectors.brSwiperToggle, 'br-swiper-toggle');
       this.addProductCTA();
     }
     this.toggleIeClasses = (selectorsNode, className) => {

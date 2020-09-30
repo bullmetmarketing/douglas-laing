@@ -1,47 +1,5 @@
 "use strict";
 
-function _toConsumableArray(arr) {
-  return (
-    _arrayWithoutHoles(arr) ||
-    _iterableToArray(arr) ||
-    _unsupportedIterableToArray(arr) ||
-    _nonIterableSpread()
-  );
-}
-
-function _nonIterableSpread() {
-  throw new TypeError(
-    "Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."
-  );
-}
-
-function _unsupportedIterableToArray(o, minLen) {
-  if (!o) return;
-  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-  var n = Object.prototype.toString.call(o).slice(8, -1);
-  if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return Array.from(o);
-  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))
-    return _arrayLikeToArray(o, minLen);
-}
-
-function _iterableToArray(iter) {
-  if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter))
-    return Array.from(iter);
-}
-
-function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
-}
-
-function _arrayLikeToArray(arr, len) {
-  if (len == null || len > arr.length) len = arr.length;
-  for (var i = 0, arr2 = new Array(len); i < len; i++) {
-    arr2[i] = arr[i];
-  }
-  return arr2;
-}
-
 var main = function main() {
   var selectors = new (function () {
     this.page = document.querySelector("body");
@@ -55,8 +13,11 @@ var main = function main() {
     this.brSwiperRightButton = this.brSwiperContainer.querySelector(
       ".right-button"
     );
-    this.brSwiperWrapper = this.brSwiperContainer.querySelector(
+    this.brSwiperWrapper = this.brSwiperContainer.querySelectorAll(
       ".br-swiper-wrapper"
+    );
+    this.brSwiperButton = this.brSwiper.querySelectorAll(
+      ".br-swiper-toggle button"
     );
     this.brSwiperProductInfo = this.brSwiperContainer.querySelector(
       ".br-swipe-product-info-title"
@@ -67,6 +28,10 @@ var main = function main() {
     this.brSwiperProductCTA = this.brSwiperContainer.querySelector(
       ".br-swipe-product-info a"
     );
+    this.brSwiperProductCounter = this.brSwiperContainer.querySelector(
+      ".br-swipper-product-counter"
+    );
+    this.selectedSwiper;
     this.brSwiperFocus;
     this.brSwiperNext;
     this.brSwiperPrev;
@@ -78,13 +43,14 @@ var main = function main() {
     this.productsToShow = 5;
     this.productList = [];
     this.lockPosition = 0;
+    this.swiperActive = "classic";
   })();
   var view = new (function () {
     var _this = this;
 
     this.setProductElements = function () {
-      model.productList = _toConsumableArray(
-        document.querySelectorAll(".default")
+      model.productList = Array.prototype.slice.call(
+        selectors.selectedSwiper.querySelectorAll(".default")
       );
     };
 
@@ -92,7 +58,7 @@ var main = function main() {
       model.containerWidth = selectors.brSwiperContainer.offsetWidth;
       model.productWidth = model.containerWidth / model.productsToShow;
       model.productList.forEach(function (product) {
-        product.style.width = "".concat(model.productWidth, "px");
+        product.style.width = model.productWidth + "px";
       });
     };
 
@@ -105,10 +71,9 @@ var main = function main() {
       var swiperPosition;
 
       if (model.productList.length % 2 === 0) {
-        centralPosition = Math.ceil(model.productList.length / 2);
-        swiperPosition = Math.ceil(
-          (model.productList.length - model.productsToShow) / 2
-        );
+        centralPosition = Math.ceil(model.productList.length / 2); // swiperPosition = Math.ceil((model.productList.length - model.productsToShow) / 2);
+
+        swiperPosition = 0.5;
       } else {
         centralPosition = Math.floor(model.productList.length / 2);
         swiperPosition = 0;
@@ -126,10 +91,8 @@ var main = function main() {
       selectors.brSwiperFocus.classList.add("focus");
       selectors.brSwiperPrev.classList.add("prev");
       selectors.brSwiperNext.classList.add("next");
-      selectors.brSwiperWrapper.style.left = "-".concat(
-        model.productWidth * swiperPosition,
-        "px"
-      );
+      selectors.selectedSwiper.style.left =
+        "-" + model.productWidth * swiperPosition + "px";
 
       _this.createProductCTA(selectors.brSwiperFocus);
     };
@@ -137,9 +100,16 @@ var main = function main() {
     this.createProductCTA = function (selector) {
       var productInfo = selector.getAttribute("data-product");
       var productPrize = selector.getAttribute("data-prize");
+      var productOrder = Number(selector.getAttribute("data-list")) + 1;
       var productLink = selector.querySelector("a").getAttribute("href");
       selectors.brSwiperProductInfo.innerHTML = productInfo;
       selectors.brSwiperProductPrize.innerHTML = productPrize;
+      selectors.brSwiperProductCounter.innerHTML =
+        "Producto <span>" +
+        productOrder +
+        "</span> de <span>" +
+        model.productList.length +
+        "</span>";
       selectors.brSwiperProductCTA.setAttribute("href", productLink);
     };
 
@@ -152,17 +122,13 @@ var main = function main() {
     };
 
     this.swipeOne = function (direction) {
-      var previousLeft = parseFloat(selectors.brSwiperWrapper.style.left);
+      var previousLeft = parseFloat(selectors.selectedSwiper.style.left);
       direction === "left" &&
-        (selectors.brSwiperWrapper.style.left = "".concat(
-          previousLeft - model.productWidth,
-          "px"
-        ));
+        (selectors.selectedSwiper.style.left =
+          previousLeft - model.productWidth + "px");
       direction === "right" &&
-        (selectors.brSwiperWrapper.style.left = "".concat(
-          previousLeft + model.productWidth,
-          "px"
-        ));
+        (selectors.selectedSwiper.style.left =
+          previousLeft + model.productWidth + "px");
     };
 
     this.resetClasses = function () {
@@ -173,6 +139,35 @@ var main = function main() {
         product.classList.remove("prev");
         product.classList.remove("next");
       });
+    };
+
+    this.resetedSwipersWrapper = function () {
+      view.resetClasses();
+      var wrappers = Array.prototype.slice.call(selectors.brSwiperWrapper);
+      wrappers.forEach(function (wrapper) {
+        console.log(selectors.brSwiperWrapper, wrappers, wrapper);
+        wrapper.classList.remove("selected");
+        wrapper.classList.add("unselected");
+        return wrapper;
+      });
+      return wrappers;
+    };
+
+    this.setStarterSwipper = function () {
+      selectors.selectedSwiper = _this
+        .resetedSwipersWrapper()
+        .filter(function (swiper) {
+          return swiper.id === model.swiperActive;
+        })[0];
+      selectors.selectedSwiper.classList.remove("unselected");
+      selectors.selectedSwiper.classList.add("selected");
+    };
+
+    this.toggleSwipperButton = function (button) {
+      selectors.brSwiperButton.forEach(function (button) {
+        return button.classList.remove("button-active");
+      });
+      button.classList.add("button-active");
     };
   })();
   var events = new (function () {
@@ -190,13 +185,11 @@ var main = function main() {
       }
 
       var previousWidth = model.productWidth;
-      var previousLeft = parseFloat(selectors.brSwiperWrapper.style.left);
+      var previousLeft = parseFloat(selectors.selectedSwiper.style.left);
       view.setProductWidth();
       var reducctionFactor = previousWidth / model.productWidth;
-      selectors.brSwiperWrapper.style.left = "".concat(
-        previousLeft / reducctionFactor,
-        "px"
-      );
+      selectors.selectedSwiper.style.left =
+        previousLeft / reducctionFactor + "px";
     };
 
     this.onPrevious = function () {
@@ -267,6 +260,13 @@ var main = function main() {
     this.unify = function (e) {
       return e.changedTouches ? e.changedTouches[0] : e;
     };
+
+    this.selectSwiper = function (e) {
+      model.swiperActive = e.target.dataset.swiper;
+      view.toggleSwipperButton(e.target);
+      view.setStarterSwipper();
+      view.setStartingPosition();
+    };
   })();
 
   if (window.innerWidth < 750) {
@@ -274,12 +274,24 @@ var main = function main() {
     model.productsToShow = 3;
   }
 
+  view.setStarterSwipper();
   view.setStartingPosition();
   window.addEventListener("resize", events.resizeProductAndPosition, true);
-  selectors.brSwiperWrapper.addEventListener("mousedown", events.lock, true);
-  selectors.brSwiperWrapper.addEventListener("touchstart", events.lock, true);
-  selectors.brSwiperWrapper.addEventListener("mouseup", events.move, true);
-  selectors.brSwiperWrapper.addEventListener("touchend", events.move, true);
+  selectors.brSwiperWrapper.forEach(function (swiper) {
+    return swiper.addEventListener("mousedown", events.lock, true);
+  });
+  selectors.brSwiperWrapper.forEach(function (swiper) {
+    return swiper.addEventListener("touchstart", events.lock, true);
+  });
+  selectors.brSwiperWrapper.forEach(function (swiper) {
+    return swiper.addEventListener("mouseup", events.move, true);
+  });
+  selectors.brSwiperWrapper.forEach(function (swiper) {
+    return swiper.addEventListener("touchend", events.move, true);
+  });
+  selectors.brSwiperButton.forEach(function (button) {
+    return button.addEventListener("click", events.selectSwiper, true);
+  });
   selectors.brSwiperLeftButton.addEventListener(
     "click",
     events.onPrevious,
@@ -293,6 +305,8 @@ var mainIe = function mainIe() {
     this.page = document.querySelector("body");
     this.brSwiperContainer = this.page.querySelectorAll(".br-swiper-container");
     this.brSwiperWrapper = this.page.querySelectorAll(".br-swiper-wrapper");
+    this.brHeader = this.page.querySelector(".br-header");
+    this.brSwiperToggle = this.page.querySelector(".br-swiper-toggle");
     this.brSwiperDefault = this.page.querySelectorAll(".default");
     this.brHistoryImgContainer = this.page.querySelectorAll(
       ".br-history-se-ctnt-block-img-container"
@@ -349,6 +363,10 @@ var mainIe = function mainIe() {
         "br-history-se-ctnt-block"
       );
 
+      _this3.toggleIeClasses(selectors.brHeader, "br-header");
+
+      _this3.toggleIeClasses(selectors.brSwiperToggle, "br-swiper-toggle");
+
       _this3.addProductCTA();
     };
 
@@ -356,7 +374,7 @@ var mainIe = function mainIe() {
       var selectorsListToArray = Array.apply(null, selectorsNode);
       selectorsListToArray.forEach(function (e) {
         e.className = "";
-        e.classList.add("".concat(className, "-ie"));
+        e.classList.add(className + "-ie");
       });
     };
 
@@ -417,7 +435,7 @@ var mainNoSwiper = function mainNoSwiper() {
       var selectorsListToArray = Array.apply(null, selectorsNode);
       selectorsListToArray.forEach(function (e) {
         e.className = "";
-        e.classList.add("".concat(className, "-ie"));
+        e.classList.add(className + "-ie");
       });
     };
 

@@ -245,6 +245,9 @@ div.right-button{
       -ms-transform: translate(-60px, -50%);
           transform: translate(-60px, -50%);
 }
+.hidden{
+  display: none;
+}
 article.br-swiper-wrapper.unselected{
   display:none;
 }
