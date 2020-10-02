@@ -120,9 +120,9 @@ const main = () => {
       selectors.selectedSwiper.classList.remove("unselected");
       selectors.selectedSwiper.classList.add("selected");
     };
-    this.toggleSwipperButton = (button) => {
-      selectors.brSwiperButton.forEach(button => button.classList.remove("button-active"))
-      button.classList.add("button-active");
+    this.toggleSwipperButton = (clickedElem) => {
+      selectors.brSwiperButton.forEach(clickedElem => clickedElem.classList.remove("button-active"))
+      clickedElem.parentElement.classList.add("button-active");
     }
   };
 
@@ -193,6 +193,7 @@ const main = () => {
     };
     this.unify = (e) => { return e.changedTouches ? e.changedTouches[0] : e };
     this.selectSwiper = (e) => {
+      e.stopPropagation();
       model.swiperActive = e.target.dataset.swiper
       view.toggleSwipperButton(e.target);
       view.setStarterSwipper();
